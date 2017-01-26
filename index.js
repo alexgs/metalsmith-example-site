@@ -5,13 +5,14 @@ let Metalsmith      = require( 'metalsmith' )
     , layouts       = require( 'metalsmith-layouts' )
     , permalinks    = require( 'metalsmith-permalinks' )
     , remarkable    = require( 'metalsmith-markdown-remarkable' )
+    , saveMetadata  = require( './utilities/saveMetadata' )
     , slug          = require( 'metalsmith-slug' )
-    , writeMetadata = require( 'metalsmith-writemetadata' )
     , publish       = require( 'metalsmith-publish' )
     , snippet       = require( 'metalsmith-snippet' )
     ;
 
-Metalsmith( __dirname )
+let metalsmith = Metalsmith( __dirname );
+metalsmith
     .metadata( {
         'site-name'      : 'philgs.me',
         'site-url'       : 'http://philgs.me',
@@ -65,46 +66,18 @@ Metalsmith( __dirname )
     //     'files' : [ 'src/**/*.md', 'layouts/**/*.hbs' ],
     //     'open'  : false
     // } ) )
-    // .use( writeMetadata( {
-    //     pattern: [ '**/*.html', '**/*.md' ],
-    //     ignorekeys: [ 'contents' ],
-    //     collections: {
-    //         posts: {
-    //             output: {
-    //                 path: 'collections/posts.json',
-    //                 metadata: {
-    //                     "type": "list"
-    //                 }
-    //             },
-    //             ignorekeys: [ 'contents' ],
-    //             childIgnorekeys: [ 'next', 'previous' ]
-    //         },
-    //         'metalsmith-tutorial': {
-    //             output: {
-    //                 path: 'collections/metalsmith-tutorial.json',
-    //                 metadata: {
-    //                     "type": "list"
-    //                 }
-    //             },
-    //             ignorekeys: [ 'contents' ],
-    //             childIgnorekeys: [ 'next', 'previous' ]
-    //         },
-    //         'horrible-truth': {
-    //             output: {
-    //                 path: 'collections/horrible-truth.json',
-    //                 metadata: {
-    //                     "type": "list"
-    //                 }
-    //             },
-    //             ignorekeys: [ 'contents' ],
-    //             childIgnorekeys: [ 'next', 'previous' ]
-    //         }
-    //     }
-    // } ) )
     .build( ( err, files ) => {
         if ( err ) {
             console.log( err );
         } else {
+            // Save file and collection metadata to JSON files
+            let metadata = metalsmith.metadata();
+            let metadataCollection = {
+                files: files,
+                collections: metadata
+            };
+            saveMetadata( __dirname, metadataCollection );
+
             let fileNames = Object.keys( files );
             console.log( 'Successfully built ' + fileNames.length + ' files!' );
         }
