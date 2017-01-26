@@ -1,6 +1,6 @@
 let Metalsmith      = require( 'metalsmith' )
     , browserSync   = require( 'metalsmith-browser-sync' )
-    , collections   = require( 'metalsmith-collections' )
+    , collections   = require( 'metalsmith-nested-collections' )
     , debug         = require( 'metalsmith-debug' )
     , layouts       = require( 'metalsmith-layouts' )
     , permalinks    = require( 'metalsmith-permalinks' )
