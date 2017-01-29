@@ -1,28 +1,32 @@
-module.exports = {
+module.exports = function( grunt, options ) {
 
-    allTasks: {
-        description: 'Show all available tasks',
-        tasks: [ 'availabletasks:all' ]
-    },
+    // --- HELPER FUNCTIONS ---
+    let buildHandler = function( target ) {
+        grunt.log.ok().ok( target );
+    };
 
-    alpha: {
-        description: 'Build "Alpha" site',
-        tasks: [ 'run:alpha' ]
-    },
+    // --- ALIAS DEFINITIONS ---
+    return {
 
-    default: {
-        description: 'Show user-defined tasks',
-        tasks: [ 'availabletasks:default' ]
-    },
+        allTasks: {
+            description: 'Show all available tasks',
+            tasks: [ 'availabletasks:all' ]
+        },
 
-    // start: {
-    //     description: 'How to use a custom function',
-    //     tasks: function() {
-    //         /* do something */
-    //         return 27;
-    //     }
-    // }
+        alpha: {
+            description: 'Build "Alpha" site',
+            tasks: [ 'run:alpha' ]
+        },
 
-    // TODO: Create tasks like 'build:alpha'
-    // http://gruntjs.com/frequently-asked-questions#how-can-i-share-parameters-across-multiple-tasks
+        build: {
+            description: 'Build a site',
+            tasks: buildHandler
+        },
+
+        default: {
+            description: 'Show user-defined tasks',
+            tasks: [ 'availabletasks:default' ]
+        },
+
+    };
 };
