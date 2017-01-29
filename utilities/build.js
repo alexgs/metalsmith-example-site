@@ -50,13 +50,10 @@ let optionsSpec = {
             } )
             .reduce( ( result, value ) => result && value, true );
     },
+    id: _.isString,
     metadata: {
         siteName: _.isString,
         siteUrl: _.isString
-    },
-    paths: {
-        source: _.isString,             // Directory under config.paths.srcRoot
-        destination: _.isString,        // Directory under config.paths.dstRoot
     },
     permalinks: function( permalinks ) {
         let linksets = permalinks.linksets;
@@ -90,15 +87,16 @@ module.exports = function metalsmithBuilder( options ) {
     let metadata = _.merge( { }, config.metadata, userMetadata );
 
     // Set constants
+    options.id = _.kebabCase( options.id );
     const source = path.resolve(
         config.paths.project,
         config.paths.srcRoot,
-        options.paths.source
+        options.id
     );
     const destination = path.resolve(
         config.paths.project,
         config.paths.dstRoot,
-        options.paths.destination
+        options.id
     );
 
     let metalsmith = Metalsmith( config.paths.project );

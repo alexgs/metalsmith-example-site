@@ -20,13 +20,10 @@ let configuration = {
             reverse: true
         }
     },
+    id: 'alpha',
     metadata: {
         siteName: 'Alpha Site',
         siteUrl: 'https://alpha.local'
-    },
-    paths: {
-        source: 'alpha',
-        destination: 'alpha'
     },
     permalinks: {
         linksets: [
