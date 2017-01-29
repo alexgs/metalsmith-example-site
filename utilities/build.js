@@ -21,6 +21,9 @@ let path                = require( 'path' )
 
 // Static configuration for all sites
 let config = {
+    layouts: {
+        engine: 'handlebars',
+    },
     metadata: {
         'generator-name': 'Metalsmith',
         'generator-url': 'http://metalsmith.io'
@@ -28,7 +31,12 @@ let config = {
     paths: {
         project: path.resolve( __dirname, '..' ),   // Project root dir
         srcRoot: './src',               // Root dir for source files, relative to project root
-        dstRoot: './public'             // Root dir for output files, relative to project root
+        dstRoot: './public',            // Root dir for output files, relative to project root
+        layoutsRoot: 'layouts',         // Root dir for layouts
+        partialsSubdir: 'partials'      // Subdirectory within site-specific layout for partials
+    },
+    snippet: {
+        maxLength: 300
     }
 };
 
@@ -72,6 +80,21 @@ let optionsSpec = {
     // }
 };
 
+let getPathResolver = function( siteId ) {
+    return function resolvePath( subdirectory, subSubdirectory ) {
+        let result = path.resolve(
+            config.paths.project,
+            subdirectory,
+            siteId
+        );
+        if ( subSubdirectory ) {
+            return path.resolve( result, subSubdirectory );
+        } else {
+            return result;
+        }
+    }
+};
+
 module.exports = function metalsmithBuilder( options ) {
     // Check that the options object meets the specification
     if ( !_.deepConformsTo( options, optionsSpec ) ) {
@@ -80,6 +103,11 @@ module.exports = function metalsmithBuilder( options ) {
         throw new Error( 'Invalid `options` object passed to build script' );
     }
 
+    // --- SETUP ---
+    // Initialize and normalize
+    options.id = _.kebabCase( options.id );
+    let resolvePath = getPathResolver( options.id );
+
     // Configure metadata
     let userMetadata = _.mapKeys( options.metadata,
         ( value, key ) => _.kebabCase( key )
@@ -87,18 +115,17 @@ module.exports = function metalsmithBuilder( options ) {
     let metadata = _.merge( { }, config.metadata, userMetadata );
 
     // Set constants
-    options.id = _.kebabCase( options.id );
-    const source = path.resolve(
-        config.paths.project,
-        config.paths.srcRoot,
-        options.id
-    );
-    const destination = path.resolve(
-        config.paths.project,
-        config.paths.dstRoot,
-        options.id
-    );
+    const source = resolvePath( config.paths.srcRoot );
+    const destination = resolvePath( config.paths.dstRoot );
 
+    // Configure "metalsmith layouts" options
+    config.layouts = _.merge( config.layouts, {
+        directory: resolvePath( config.paths.layoutsRoot ),
+        partials: resolvePath( config.paths.layoutsRoot, config.paths.partialsSubdir )
+    } );
+    const layoutsOptions = _.merge( { }, config.layouts, options.layouts );
+
+    // --- BUILD ---
     let metalsmith = Metalsmith( config.paths.project );
     metalsmith
         .metadata( metadata )
@@ -115,20 +142,18 @@ module.exports = function metalsmithBuilder( options ) {
 
         // "Permalinks" goes **after** "Remarkable"
         .use( permalinks ( options.permalinks ) )
+
+        // "Snippet" goes **after** "Remarkable" and **before** "Layouts"
+        .use( snippet( config.snippet ) )
+
+        // "Layouts" goes **after** "Permalinks"
+        .use( layouts( layoutsOptions ) )
+        .use( debug() )
     ;
 };
 
 
 // metalsmith
-//     .use( snippet( {        // "Snippet" goes **after** "Remarkable" and **before** "Layouts"
-//         "maxLength": 300
-//     } ) )
-//     .use( layouts( {        // "Layouts" goes **after** "Permalinks"
-//         engine  : 'handlebars',
-//         default : 'post.hbs',
-//         partials: 'layouts/partials'
-//     } ) )
-//     .use( debug() )
 //     // .use( browserSync( {
 //     //     'server': 'public',
 //     //     'files' : [ 'src/**/*.md', 'layouts/**/*.hbs' ],

@@ -21,6 +21,9 @@ let configuration = {
         }
     },
     id: 'alpha',
+    layouts: {
+        default : 'post.hbs',
+    },
     metadata: {
         siteName: 'Alpha Site',
         siteUrl: 'https://alpha.local'
