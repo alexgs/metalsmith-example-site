@@ -35,11 +35,11 @@ let config = {
 // Specification for the Options object passed in from the caller
 let collectionSpec = {
     pattern: _.isString
-    /*
-     * Optional fields:
-     *     sortBy: string
-      *    reverse: boolean
-     */
+    // Optional fields: sortBy (string); reverse (boolean)
+};
+let linksetSpec = {
+    match: _.isPlainObject
+    // Optional fields: pattern (string); date (string)
 };
 let optionsSpec = {
     collections: function( collections ) {
@@ -57,6 +57,17 @@ let optionsSpec = {
     paths: {
         source: _.isString,             // Directory under config.paths.srcRoot
         destination: _.isString,        // Directory under config.paths.dstRoot
+    },
+    permalinks: function( permalinks ) {
+        let linksets = permalinks.linksets;
+        let linksetResult = _( linksets ).keys()
+            .map( linksetName  => {
+                let linksetDef = linksets[ linksetName ];
+                return _.conformsTo( linksetDef, linksetSpec );
+            } )
+            .reduce( ( result, value ) => result && value, true );
+
+        return _.isArray( linksets ) && linksetResult;
     }
     // , testFailure: _.isString
     // , test: {
@@ -96,24 +107,21 @@ module.exports = function metalsmithBuilder( options ) {
         .clean( true )
         .source( source )
         .destination( destination )
+
+        // "Collections" goes **before** "Remarkable"
         .use( collections( options.collections ) )
+        .use( slug( { mode: 'rfc3986' } ) )
+
+        // "Remarkable" goes **after** "Collections" and **before** both "Permalinks" and "Layouts"
+        .use( remarkable() )
+
+        // "Permalinks" goes **after** "Remarkable"
+        .use( permalinks ( options.permalinks ) )
     ;
 };
 
 
 // metalsmith
-//     .use( slug( { mode: 'rfc3986' } ) )
-//     .use( remarkable() )    // "Remarkable" goes **after** "Collections" and **before** both "Permalinks" and "Layouts"
-//     .use( permalinks( {     // "Permalinks" goes **after** "Remarkable"
-//         linksets: [
-//             {
-//                 match: { collection: 'posts' },
-//                 pattern: 'blog/:date/:slug',
-//                 date: 'YYYY/MM',
-//                 useDefaultDate: true
-//             }
-//         ]
-//     } ) )
 //     .use( snippet( {        // "Snippet" goes **after** "Remarkable" and **before** "Layouts"
 //         "maxLength": 300
 //     } ) )

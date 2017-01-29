@@ -27,6 +27,16 @@ let configuration = {
     paths: {
         source: 'alpha',
         destination: 'alpha'
+    },
+    permalinks: {
+        linksets: [
+            {
+                match: { collection: 'posts' },
+                pattern: 'blog/:date/:slug',
+                date: 'YYYY/MM',
+                useDefaultDate: true
+            }
+        ]
     }
 };
 
