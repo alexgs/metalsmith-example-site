@@ -1,5 +1,7 @@
 module.exports = {
-    tasks: {
+    all: { },
+
+    default: {
         options: {
             showTasks: ['user']
         }

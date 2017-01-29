@@ -1,23 +1,26 @@
 module.exports = {
 
-    'build-dev': {
-        description: 'Build the project for development',
-        tasks: [ 'webpack:dev' ]
+    allTasks: {
+        description: 'Show all available tasks',
+        tasks: [ 'availabletasks:all' ]
+    },
+
+    alpha: {
+        description: 'Build "Alpha" site',
+        tasks: [ 'run:alpha' ]
     },
 
     default: {
         description: 'Show user-defined tasks',
-        tasks: 'availabletasks'
+        tasks: [ 'availabletasks:default' ]
     },
 
-    dev: {
-        description: 'Start the Webpack dev server',
-        tasks: [ 'webpack-dev-server:dev' ]
-    },
-
-    start: {
-        // TODO
-        tasks: [ 'node index.js' ]
-    }
+    // start: {
+    //     description: 'How to use a custom function',
+    //     tasks: function() {
+    //         /* do something */
+    //         return 27;
+    //     }
+    // }
 
 };
