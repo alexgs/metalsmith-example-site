@@ -1,39 +1,22 @@
-let _               = require( 'lodash' ).runInContext()
-    , Metalsmith    = require( 'metalsmith' )
-    , browserSync   = require( 'metalsmith-browser-sync' )
-    , collections   = require( 'metalsmith-nested-collections' )
-    , debug         = require( 'metalsmith-debug' )
-    , layouts       = require( 'metalsmith-layouts' )
-    , permalinks    = require( 'metalsmith-permalinks' )
-    , remarkable    = require( 'metalsmith-markdown-remarkable' )
-    , saveMetadata  = require( './../utilities/saveMetadata' )
-    , slug          = require( 'metalsmith-slug' )
-    , publish       = require( 'metalsmith-publish' )
-    , snippet       = require( 'metalsmith-snippet' )
+let _                   = require( 'lodash' ).runInContext()
+    , deepConformsTo    = require( './deepConformsTo' )
+    ;
+_.mixin( deepConformsTo );
+
+let Metalsmith          = require( 'metalsmith' )
+    , browserSync       = require( 'metalsmith-browser-sync' )
+    , collections       = require( 'metalsmith-nested-collections' )
+    , debug             = require( 'metalsmith-debug' )
+    , layouts           = require( 'metalsmith-layouts' )
+    , permalinks        = require( 'metalsmith-permalinks' )
+    , remarkable        = require( 'metalsmith-markdown-remarkable' )
+    , saveMetadata      = require( './../utilities/saveMetadata' )
+    , slug              = require( 'metalsmith-slug' )
+    , publish           = require( 'metalsmith-publish' )
+    , snippet           = require( 'metalsmith-snippet' )
     ;
 
-_.mixin( {
-    deepConformsTo: function deepConformsTo( object, source ) {
-        // Partition the keys into those for primitive values and those for child objects
-        let [ children, primitives ] = _.partition( _.keys( object ),
-            key => _.isPlainObject( object[ key ] )
-        );
-
-        // Check that the primitives match the spec
-        let checkPrimitives = _.conformsTo( object, _.pick( source, primitives ) );
-
-        // If there are child objects, check them recursively.
-        // If there are only primitives, end recursion.
-        if ( children.length > 0 ) {
-            let checkChildren = _.forEach( children,
-                child => deepConformsTo( object[ child ], source[ child ] )
-            );
-            return checkPrimitives && checkChildren;
-        } else {
-            return checkPrimitives;
-        }
-    }
-} );
+let specReplacer = require( './specReplacer' );
 
 let optionsSpec = {
     metadata: {
@@ -41,21 +24,13 @@ let optionsSpec = {
         siteUrl: _.isString
     },
     rootPath: _.isString
-};
-
-let specReplacer = function( key, value ) {
-    if ( _.isFunction( value ) ) {
-        return _.chain( value.name ).trimStart( 'is' ).toLower().value();
-    }
-
-    // default
-    return value;
+    // , testFailure: _.isString
 };
 
 module.exports = function metalsmithBuilder( options ) {
 
     if ( !_.deepConformsTo( options, optionsSpec ) ) {
-        console.log( '`options` object specification:\n' + JSON.stringify( optionsSpec, specReplacer, 2 ) );
+        console.log( 'Options object specification:\n' + JSON.stringify( optionsSpec, specReplacer, 2 ) );
         process.exitCode = 14;
         throw new Error( 'Invalid `options` object passed to build script' );
     }
