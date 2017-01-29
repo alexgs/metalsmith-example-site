@@ -33,7 +33,23 @@ let config = {
 };
 
 // Specification for the Options object passed in from the caller
+let collectionSpec = {
+    pattern: _.isString
+    /*
+     * Optional fields:
+     *     sortBy: string
+      *    reverse: boolean
+     */
+};
 let optionsSpec = {
+    collections: function( collections ) {
+        return _( collections ).keys()
+            .map( collectionName => {
+                let collectionDef = collections[ collectionName ];
+                return _.conformsTo( collectionDef, collectionSpec );
+            } )
+            .reduce( ( result, value ) => result && value, true );
+    },
     metadata: {
         siteName: _.isString,
         siteUrl: _.isString
@@ -61,7 +77,6 @@ module.exports = function metalsmithBuilder( options ) {
         ( value, key ) => _.kebabCase( key )
     );
     let metadata = _.merge( { }, config.metadata, userMetadata );
-    console.log( JSON.stringify( metadata, null, 2 ) );
 
     // Set constants
     const source = path.resolve(
@@ -80,28 +95,13 @@ module.exports = function metalsmithBuilder( options ) {
         .metadata( metadata )
         .clean( true )
         .source( source )
-        .destination( destination );
+        .destination( destination )
+        .use( collections( options.collections ) )
+    ;
 };
 
 
 // metalsmith
-//     .use( collections( {    // "Collections" goes **before** "Remarkable"
-//         posts: {
-//             pattern: 'posts/**/*.md',
-//             sortBy: 'date',
-//             reverse: true
-//         },
-//         'metalsmith-tutorial': {
-//             pattern: 'posts/metalsmith-tutorial/*.md',
-//             sortBy: 'date',
-//             reverse: true
-//         },
-//         'horrible-truth': {
-//             pattern: 'posts/horrible-truth/*.md',
-//             sortBy: 'date',
-//             reverse: true
-//         }
-//     } ) )
 //     .use( slug( { mode: 'rfc3986' } ) )
 //     .use( remarkable() )    // "Remarkable" goes **after** "Collections" and **before** both "Permalinks" and "Layouts"
 //     .use( permalinks( {     // "Permalinks" goes **after** "Remarkable"
