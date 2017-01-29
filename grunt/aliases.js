@@ -4,7 +4,8 @@ module.exports = function( grunt, options ) {
 
     // --- HELPER FUNCTIONS ---
     let targetList = [
-        'alpha'
+        'alpha',
+        'beta'
     ];
 
     let makeTargetHandler = function( callback, allowAll = false ) {
@@ -20,7 +21,7 @@ module.exports = function( grunt, options ) {
                 grunt.log.ok( 'Building all targets...' );
                 _.forEach( targetList, callback );
             } else if ( target === 'help' ) {
-                grunt.log.warn( 'Available targets' + _.join( targetList, ', ' ) );
+                grunt.log.warn( 'Available targets: ' + _.join( targetList, ', ' ) );
             } else if ( _.includes( targetList, target ) ) {
                 callback( target );
             } else {
