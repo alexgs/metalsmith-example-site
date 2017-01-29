@@ -9,25 +9,25 @@ let configuration = {
             sortBy: 'date',
             reverse: true
         },
-        'metalsmith-tutorial': {
-            pattern: 'posts/metalsmith-tutorial/*.md',
+        'redux-tutorial': {
+            pattern: 'posts/redux-tutorial/*.md',
             sortBy: 'date',
             reverse: true
         },
-        'horrible-truth': {
-            pattern: 'posts/horrible-truth/*.md',
+        'shocking-secret': {
+            pattern: 'posts/shocking-secret/*.md',
             sortBy: 'date',
             reverse: true
         }
     },
-    id: 'alpha',
+    id: 'beta',
     layouts: {
         default : 'post.hbs',
     },
     liveServer: !!argv[ 'server' ],
     metadata: {
-        siteName: 'Alpha Site',
-        siteUrl: 'https://alpha.local'
+        siteName: 'Beta Site',
+        siteUrl: 'https://beta.local'
     },
     permalinks: {
         linksets: [
