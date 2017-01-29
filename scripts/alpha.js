@@ -24,6 +24,7 @@ let configuration = {
     layouts: {
         default : 'post.hbs',
     },
+    liveServer: !!argv[ 'server' ],
     metadata: {
         siteName: 'Alpha Site',
         siteUrl: 'https://alpha.local'
@@ -40,4 +41,5 @@ let configuration = {
     }
 };
 
+// console.log( configuration );
 build( configuration );

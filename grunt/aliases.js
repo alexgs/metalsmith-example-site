@@ -3,35 +3,46 @@ let _ = require( 'lodash' );
 module.exports = function( grunt, options ) {
 
     // --- HELPER FUNCTIONS ---
-    let buildHandler = function( target ) {
-        let targetList = [
-            'alpha'
-        ];
+    let targetList = [
+        'alpha'
+    ];
 
-        if ( !target ) {
-            target = 'all';
-        } else {
-            target = _.camelCase( target );
-        }
+    let makeTargetHandler = function( callback, allowAll = false ) {
+        return function targetHandler( target ) {
 
-        if ( target === 'all' ) {
-            grunt.log.ok( 'Building all targets...' );
-            _.forEach( targetList, executeScript );
-        } else if ( target === 'help' ) {
-            grunt.log.warn( 'Available targets' + _.join( targetList, ', ' ) );
-        } else if ( _.includes( targetList, target ) ) {
-            executeScript( target );
-        } else {
-            grunt.log.error()
-                .error( 'Unknown build target: ' + target )
-                .error( 'Try "build:help" to see a list of valid targets' );
-        }
+            if ( !target ) {
+                target = 'all';
+            } else {
+                target = _.camelCase( target );
+            }
+
+            if ( allowAll && target === 'all' ) {
+                grunt.log.ok( 'Building all targets...' );
+                _.forEach( targetList, callback );
+            } else if ( target === 'help' ) {
+                grunt.log.warn( 'Available targets' + _.join( targetList, ', ' ) );
+            } else if ( _.includes( targetList, target ) ) {
+                callback( target );
+            } else {
+                grunt.log.error()
+                    .error( 'Unknown build target: ' + target )
+                    .error( 'Try "build:help" to see a list of valid targets' );
+            }
+        };
     };
 
-    let executeScript = function( name ) {
+    let executeBuildScript = function( name ) {
         grunt.log.ok( 'Building target ' + name );
         grunt.task.run( 'run:' + name );
     };
+
+    let executeDevScript = function( name ) {
+        grunt.log.ok( 'Building target ' + name + ' for live server' );
+        grunt.task.run( 'run:' + name + 'Dev' );
+    };
+
+    let buildHandler = makeTargetHandler( executeBuildScript, true );
+    let devHandler = makeTargetHandler( executeDevScript );
 
     // --- ALIAS DEFINITIONS ---
     return {
@@ -39,11 +50,6 @@ module.exports = function( grunt, options ) {
         allTasks: {
             description: 'Show all available tasks',
             tasks: [ 'availabletasks:all' ]
-        },
-
-        alpha: {
-            description: 'Build "Alpha" site',
-            tasks: [ 'run:alpha' ]
         },
 
         build: {
@@ -55,6 +61,11 @@ module.exports = function( grunt, options ) {
             description: 'Show user-defined tasks',
             tasks: [ 'availabletasks:default' ]
         },
+
+        dev: {
+            description: 'Launch live server for a site',
+            tasks: devHandler
+        }
 
     };
 };

@@ -59,6 +59,10 @@ let optionsSpec = {
             .reduce( ( result, value ) => result && value, true );
     },
     id: _.isString,
+    layouts: {
+        default: _.isString
+    },
+    liveServer: _.isBoolean,
     metadata: {
         siteName: _.isString,
         siteUrl: _.isString
@@ -127,7 +131,9 @@ module.exports = function metalsmithBuilder( options ) {
 
     // --- BUILD ---
     let metalsmith = Metalsmith( config.paths.project );
-    metalsmith
+
+    // Who is Deknar? https://twitter.com/d20monkey/status/812077026312155137
+    let deknar = metalsmith
         .metadata( metadata )
         .clean( true )
         .source( source )
@@ -148,30 +154,34 @@ module.exports = function metalsmithBuilder( options ) {
 
         // "Layouts" goes **after** "Permalinks"
         .use( layouts( layoutsOptions ) )
-        .use( debug() )
-    ;
+        .use( debug() );
+
+    if ( options.liveServer ) {
+        deknar.use( browserSync( {
+            'server': destination,
+            'files' : [
+                `${ source }/**/*.md`,
+                `${ config.layouts.directory }/**/*.hbs`
+            ],
+            'open'  : false
+        } ) );
+    }
+
+    deknar.build( ( err, files ) => {
+        if ( err ) {
+            console.log( err );
+        } else {
+            // Save file and collection metadata to JSON files
+            let metadataPath = resolvePath( 'metadata' );
+            let metadata = metalsmith.metadata();
+            let metadataCollection = {
+                files: files,
+                collections: metadata
+            };
+            saveMetadata( metadataPath, metadataCollection );
+
+            let fileNames = Object.keys( files );
+            console.log( 'Successfully built ' + fileNames.length + ' files!' );
+        }
+    } );
 };
-
-
-// metalsmith
-//     // .use( browserSync( {
-//     //     'server': 'public',
-//     //     'files' : [ 'src/**/*.md', 'layouts/**/*.hbs' ],
-//     //     'open'  : false
-//     // } ) )
-//     .build( ( err, files ) => {
-//         if ( err ) {
-//             console.log( err );
-//         } else {
-//             // Save file and collection metadata to JSON files
-//             let metadata = metalsmith.metadata();
-//             let metadataCollection = {
-//                 files: files,
-//                 collections: metadata
-//             };
-//             saveMetadata( rootPath, metadataCollection );
-//
-//             let fileNames = Object.keys( files );
-//             console.log( 'Successfully built ' + fileNames.length + ' files!' );
-//         }
-//     } );
