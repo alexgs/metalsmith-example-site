@@ -16,44 +16,75 @@ let Metalsmith          = require( 'metalsmith' )
     , snippet           = require( 'metalsmith-snippet' )
     ;
 
-let specReplacer = require( './specReplacer' );
+let path                = require( 'path' )
+    , specReplacer      = require( './specReplacer' );
 
+// Static configuration for all sites
+let config = {
+    metadata: {
+        'generator-name': 'Metalsmith',
+        'generator-url': 'http://metalsmith.io'
+    },
+    paths: {
+        project: path.resolve( __dirname, '..' ),   // Project root dir
+        srcRoot: './src',               // Root dir for source files, relative to project root
+        dstRoot: './public'             // Root dir for output files, relative to project root
+    }
+};
+
+// Specification for the Options object passed in from the caller
 let optionsSpec = {
     metadata: {
         siteName: _.isString,
         siteUrl: _.isString
     },
-    rootPath: _.isString
+    paths: {
+        source: _.isString,             // Directory under config.paths.srcRoot
+        destination: _.isString,        // Directory under config.paths.dstRoot
+    }
     // , testFailure: _.isString
+    // , test: {
+    //     failure: _.isString
+    // }
 };
 
 module.exports = function metalsmithBuilder( options ) {
-
+    // Check that the options object meets the specification
     if ( !_.deepConformsTo( options, optionsSpec ) ) {
         console.log( 'Options object specification:\n' + JSON.stringify( optionsSpec, specReplacer, 2 ) );
         process.exitCode = 14;
         throw new Error( 'Invalid `options` object passed to build script' );
     }
 
-    let metalsmith = Metalsmith( options.rootPath );
+    // Configure metadata
+    let userMetadata = _.mapKeys( options.metadata,
+        ( value, key ) => _.kebabCase( key )
+    );
+    let metadata = _.merge( { }, config.metadata, userMetadata );
+    console.log( JSON.stringify( metadata, null, 2 ) );
 
-    let userMetadata = _.mapKeys( options.metadata, _.kebabCase );
-    console.log( JSON.stringify( userMetadata, null, 2 ) );
+    // Set constants
+    const source = path.resolve(
+        config.paths.project,
+        config.paths.srcRoot,
+        options.paths.source
+    );
+    const destination = path.resolve(
+        config.paths.project,
+        config.paths.dstRoot,
+        options.paths.destination
+    );
 
+    let metalsmith = Metalsmith( config.paths.project );
+    metalsmith
+        .metadata( metadata )
+        .clean( true )
+        .source( source )
+        .destination( destination );
 };
 
 
 // metalsmith
-//     .metadata( {
-//         'site-name'      : 'philgs.me',
-//         'site-url'       : 'http://philgs.me',
-//         'generator-name' : 'Metalsmith',
-//         'generator-url'  : 'http://metalsmith.io'
-//     } )
-//     .clean( true )
-//     .source( './src/alpha' )
-//     .destination( './public/alpha' )
-//     .use( publish() )       // "Publish" goes **before** "Collections"
 //     .use( collections( {    // "Collections" goes **before** "Remarkable"
 //         posts: {
 //             pattern: 'posts/**/*.md',

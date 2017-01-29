@@ -3,10 +3,13 @@ let argv        = require( 'minimist' )( process.argv.slice( 2 ) )
     ;
 
 let configuration = {
-    rootPath: argv[ 'root' ],
     metadata: {
         siteName: 'Alpha Site',
         siteUrl: 'https://alpha.local'
+    },
+    paths: {
+        source: 'alpha',
+        destination: 'alpha'
     }
 };
 
