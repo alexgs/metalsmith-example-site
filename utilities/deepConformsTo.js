@@ -13,9 +13,9 @@ module.exports = {
         // If there are child objects, check them recursively.
         // If there are only primitives, end recursion.
         if ( children.length > 0 ) {
-            let checkChildren = _.forEach( children,
-                child => deepConformsTo( object[ child ], source[ child ] )
-            );
+            let checkChildren = _( children )
+                .map( child => deepConformsTo( object[ child ], source[ child ] ) )
+                .reduce( ( result, value ) => result && value, true );
             return checkPrimitives && checkChildren;
         } else {
             return checkPrimitives;
