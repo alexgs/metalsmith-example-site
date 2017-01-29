@@ -34,6 +34,6 @@
     "metalsmith-publish": "^0.1.5",
     "metalsmith-slug": "^0.2.0",
     "metalsmith-snippet": "^2.0.0",
-    "metalsmith-writemetadata": "^0.4.5"
+    "minimist": "^1.2.0"
   }
 }
