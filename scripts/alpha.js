@@ -1,17 +1,22 @@
 let Metalsmith      = require( 'metalsmith' )
+    , argv          = require( 'minimist' )( process.argv.slice( 2 ) )
     , browserSync   = require( 'metalsmith-browser-sync' )
     , collections   = require( 'metalsmith-nested-collections' )
     , debug         = require( 'metalsmith-debug' )
     , layouts       = require( 'metalsmith-layouts' )
     , permalinks    = require( 'metalsmith-permalinks' )
     , remarkable    = require( 'metalsmith-markdown-remarkable' )
-    , saveMetadata  = require( './utilities/saveMetadata' )
+    , saveMetadata  = require( './../utilities/saveMetadata' )
     , slug          = require( 'metalsmith-slug' )
     , publish       = require( 'metalsmith-publish' )
     , snippet       = require( 'metalsmith-snippet' )
     ;
 
-let metalsmith = Metalsmith( __dirname );
+let rootPath = argv[ 'root' ];
+
+// TODO: Refactor into generic build process that takes an options argument and lives in `<root>/utilities`
+
+let metalsmith = Metalsmith( rootPath );
 metalsmith
     .metadata( {
         'site-name'      : 'philgs.me',
@@ -20,8 +25,8 @@ metalsmith
         'generator-url'  : 'http://metalsmith.io'
     } )
     .clean( true )
-    .source( './src' )
-    .destination( './public' )
+    .source( './src/alpha' )
+    .destination( './public/alpha' )
     .use( publish() )       // "Publish" goes **before** "Collections"
     .use( collections( {    // "Collections" goes **before** "Remarkable"
         posts: {
@@ -76,7 +81,7 @@ metalsmith
                 files: files,
                 collections: metadata
             };
-            saveMetadata( __dirname, metadataCollection );
+            saveMetadata( rootPath, metadataCollection );
 
             let fileNames = Object.keys( files );
             console.log( 'Successfully built ' + fileNames.length + ' files!' );
