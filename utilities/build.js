@@ -4,6 +4,7 @@ let _                   = require( 'lodash' ).runInContext()
 _.mixin( deepConformsTo );
 
 let Metalsmith          = require( 'metalsmith' )
+    , assets            = require( 'metalsmith-assets-improved' )
     , browserSync       = require( 'metalsmith-browser-sync' )
     , collections       = require( 'metalsmith-nested-collections' )
     , debug             = require( 'metalsmith-debug' )
@@ -21,6 +22,9 @@ let path                = require( 'path' )
 
 // Static configuration for all sites
 let config = {
+    assets: {
+        replace: 'old'
+    },
     layouts: {
         engine: 'handlebars',
     },
@@ -33,7 +37,9 @@ let config = {
         srcRoot: './src',               // Root dir for source files, relative to project root
         dstRoot: './public',            // Root dir for output files, relative to project root
         layoutsRoot: 'layouts',         // Root dir for layouts
-        partialsSubdir: 'partials'      // Subdirectory within site-specific layout for partials
+        partialsSubdir: 'partials',     // Subdirectory within site-specific layout for partials
+        assetsSrcSubdir: 'static',      // Subdirectory within site-specific source for static assets
+        assetsDestSubdir: 'static'      // Subdirectory within site-specific destination for static assets
     },
     snippet: {
         maxLength: 300
@@ -122,6 +128,13 @@ module.exports = function metalsmithBuilder( options ) {
     const source = resolvePath( config.paths.srcRoot );
     const destination = resolvePath( config.paths.dstRoot );
 
+    // Set assets options
+    config.assets = _.merge( config.assets, {
+        src: resolvePath( config.paths.srcRoot, config.paths.assetsSrcSubdir ),
+        dest: resolvePath( config.paths.dstRoot, config.paths.assetsDestSubdir )
+    } );
+    const assetsOptions = _.merge( { }, config.assets, options.assets );
+
     // Configure "metalsmith layouts" options
     config.layouts = _.merge( config.layouts, {
         directory: resolvePath( config.paths.layoutsRoot ),
@@ -135,13 +148,14 @@ module.exports = function metalsmithBuilder( options ) {
     // Who is Deknar? https://twitter.com/d20monkey/status/812077026312155137
     let deknar = metalsmith
         .metadata( metadata )
-        .clean( true )
+        // .clean( true )
         .source( source )
         .destination( destination )
 
         // "Collections" goes **before** "Remarkable"
         .use( collections( options.collections ) )
         .use( slug( { mode: 'rfc3986' } ) )
+        .use( assets( assetsOptions ) )
 
         // "Remarkable" goes **after** "Collections" and **before** both "Permalinks" and "Layouts"
         .use( remarkable() )
@@ -157,6 +171,7 @@ module.exports = function metalsmithBuilder( options ) {
         .use( debug() );
 
     if ( options.liveServer ) {
+        deknar.clean( false );
         deknar.use( browserSync( {
             'server': destination,
             'files' : [
@@ -165,6 +180,8 @@ module.exports = function metalsmithBuilder( options ) {
             ],
             'open'  : false
         } ) );
+    } else {
+        deknar.clean( true );
     }
 
     deknar.build( ( err, files ) => {
