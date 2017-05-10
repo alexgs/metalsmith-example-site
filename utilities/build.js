@@ -27,6 +27,7 @@ let config = {
     },
     layouts: {
         engine: 'handlebars',
+        pattern: '**/*.html'
     },
     metadata: {
         'generator-name': 'Metalsmith',
