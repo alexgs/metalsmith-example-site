@@ -121,13 +121,19 @@ module.exports = function metalsmithBuilder( options ) {
 
     // Configure metadata
     let userMetadata = _.mapKeys( options.metadata,
-        ( value, key ) => _.kebabCase( key )
+        ( value, key ) => _.camelCase( key )
     );
-    let metadata = _.merge( { }, config.metadata, userMetadata );
+    let defaultMetadata = _.mapKeys( config.metadata,
+        ( value, key ) => _.camelCase( key )
+    );
+    let metadata = _.merge( { }, defaultMetadata, userMetadata );
 
     // Set constants
     const source = resolvePath( config.paths.srcRoot );
     const destination = resolvePath( config.paths.dstRoot );
+
+    // Set paths
+    config.paths = _.merge( { }, config.paths, options.paths );
 
     // Set assets options
     config.assets = _.merge( config.assets, {
@@ -177,7 +183,7 @@ module.exports = function metalsmithBuilder( options ) {
             'server': destination,
             'files' : [
                 `${ source }/**/*.md`,
-                `${ config.layouts.directory }/**/*.hbs`
+                `${ config.layouts.directory }/**/*`
             ],
             'open'  : false
         } ) );

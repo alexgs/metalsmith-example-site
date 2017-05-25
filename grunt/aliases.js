@@ -3,10 +3,10 @@ let _ = require( 'lodash' );
 module.exports = function( grunt, options ) {
 
     // --- HELPER FUNCTIONS ---
-    let targetList = [
+    let targetList = _.map( [
         'alpha',
         'beta'
-    ];
+    ], _.camelCase );
 
     let makeTargetHandler = function( callback, allowAll = false ) {
         return function targetHandler( target ) {
@@ -21,7 +21,7 @@ module.exports = function( grunt, options ) {
                 grunt.log.ok( 'Building all targets...' );
                 _.forEach( targetList, callback );
             } else if ( target === 'help' ) {
-                grunt.log.warn( 'Available targets: ' + _.join( targetList, ', ' ) );
+                grunt.log.warn( 'Available targets: ' + _( targetList ).map( _.kebabCase ).join( ', ' ) );
             } else if ( _.includes( targetList, target ) ) {
                 callback( target );
             } else {
